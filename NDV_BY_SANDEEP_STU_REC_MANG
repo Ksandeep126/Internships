@@ -1,0 +1,136 @@
+import os
+import pickle
+
+class Student:
+    def __init__(self, roll_no, name, marks):
+        self.roll_no = roll_no
+        self.name = name
+        self.marks = marks
+
+    def display(self):
+        print(f"Roll No: {self.roll_no}, Name: {self.name}, Marks: {self.marks}")
+
+class StudentManagement:
+    filename = 'students.dat'
+
+    def add_student(self, student):
+        with open(self.filename, 'ab') as f:
+            pickle.dump(student, f)
+        print("Student added successfully.")
+
+    def display_all(self):
+        try:
+            with open(self.filename, 'rb') as f:
+                print("\nAll Student Records:\n")
+                while True:
+                    student = pickle.load(f)
+                    student.display()
+        except EOFError:
+            pass
+        except FileNotFoundError:
+            print("No student records found.")
+
+    def search_student(self, roll_no):
+        found = False
+        try:
+            with open(self.filename, 'rb') as f:
+                while True:
+                    student = pickle.load(f)
+                    if student.roll_no == roll_no:
+                        print("Student Found:")
+                        student.display()
+                        found = True
+                        break
+        except EOFError:
+            if not found:
+                print("Student not found.")
+        except FileNotFoundError:
+            print("No records found.")
+
+    def delete_student(self, roll_no):
+        found = False
+        students = []
+        try:
+            with open(self.filename, 'rb') as f:
+                while True:
+                    student = pickle.load(f)
+                    if student.roll_no != roll_no:
+                        students.append(student)
+                    else:
+                        found = True
+        except EOFError:
+            if found:
+                with open(self.filename, 'wb') as f:
+                    for s in students:
+                        pickle.dump(s, f)
+                print("Student record deleted.")
+            else:
+                print("Student not found.")
+        except FileNotFoundError:
+            print("No records to delete.")
+
+    def update_student(self, roll_no, new_name, new_marks):
+        found = False
+        students = []
+        try:
+            with open(self.filename, 'rb') as f:
+                while True:
+                    student = pickle.load(f)
+                    if student.roll_no == roll_no:
+                        student.name = new_name
+                        student.marks = new_marks
+                        found = True
+                    students.append(student)
+        except EOFError:
+            if found:
+                with open(self.filename, 'wb') as f:
+                    for s in students:
+                        pickle.dump(s, f)
+                print("Student record updated.")
+            else:
+                print("Student not found.")
+        except FileNotFoundError:
+            print("No records to update.")
+
+# --- Console App ---
+def menu():
+    sm = StudentManagement()
+
+    while True:
+        print("\n====== Student Record Management ======")
+        print("1. Add Student")
+        print("2. Display All Students")
+        print("3. Search Student")
+        print("4. Delete Student")
+        print("5. Update Student")
+        print("6. Exit")
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            roll = input("Enter Roll No: ")
+            name = input("Enter Name: ")
+            marks = float(input("Enter Marks: "))
+            student = Student(roll, name, marks)
+            sm.add_student(student)
+        elif choice == '2':
+            sm.display_all()
+        elif choice == '3':
+            roll = input("Enter Roll No to search: ")
+            sm.search_student(roll)
+        elif choice == '4':
+            roll = input("Enter Roll No to delete: ")
+            sm.delete_student(roll)
+        elif choice == '5':
+            roll = input("Enter Roll No to update: ")
+            name = input("Enter New Name: ")
+            marks = float(input("Enter New Marks: "))
+            sm.update_student(roll, name, marks)
+        elif choice == '6':
+            print("Exiting... Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+# Run the app
+if __name__ == "__main__":
+    menu()
